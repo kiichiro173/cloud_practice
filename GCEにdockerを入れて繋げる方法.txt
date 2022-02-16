@@ -1,0 +1,46 @@
+# ローカルで作成したdockerイメージ使用してGCEにて起動する
+
+1.docker イメージをContainer RegistryへPush
+注意：Google Container Registryはpullする場所に近いlocationを選んでおいた方が余計なコストがかからない
+→https://zenn.dev/en30/articles/6df8714d4c1cf2
+→ドキュメント：https://cloud.google.com/container-registry/docs
+
+・push する前にイメージにtagを付与する必要があるので注意が必要
+→https://qiita.com/t-yotsu/items/c99775f942f9bb23bd6c
+→https://qiita.com/na59ri/items/c540d9d16a1fc1c5a9c4
+
+ローカルのイメージをContainer RegistryへPushできるようイメージ名を修正する。
+$ docker tag ローカルにあるイメージ名 ホスト名/プロジェクト名/イメージ名
+
+プロジェクトIDを確認したい時は以下のコマンドで確認する
+$ gcloud config list
+
+
+Container Registryを認証していない場合は認証を行う
+$ gcloud auth configure-docker
+
+Container Registryにpushする
+$ docker push 先ほど作成したイメージ名
+
+
+・GCPのGCEでインスタンスを作成
+インスタンスを作成する際にコンテナを選ぶ箇所があるためそれを使用する。(これのやり方がいまいちうまくいかない。。。)
+普通にインスタンスを作成（インスタンス作成時にpermissionの設定を行う）
+TODO:インスタンスを建てる時にネットワークタグに必要なポートを付与するのを忘れないようにする！
+
+・SSHでログインする
+・もしpermissionがうまく設定されていない場合はgcloud initでこの作成したインスタンスのアカウントを修正する。
+・dockerをインストールする
+→https://qiita.com/kyohmizu/items/5f1929a2e949a9fa0da8
+→sudoをつけずにdockerを使用することができるように設定するのを忘れずに！
+
+・Container Registryの権限の確認
+$ gcloud auth configure-docker
+
+・Container Registryにあげたimageを持ってくる。
+$ docker pull 先ほど作成したイメージ名
+
+・runをする
+docker run -p 1234:8888 イメージID
+
+

@@ -1,0 +1,9 @@
+・cloud SDKのインストールに関して
+→https://cloud.google.com/sdk/docs/?hl=ja#install_the_latest_cloud_tools_version_cloudsdk_current_version
+→初めて使用する場合は、以下のコマンドを行い、ユーザ情報や
+$ gcloud init
+
+
+・gsutilコマンドに関して
+→Google Cloud Storage (GCS) を操作するためのコマンドラインツールのこと
+→https://www.apps-gcp.com/gsutil-command-explanation-part1/
