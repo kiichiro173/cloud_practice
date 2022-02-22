@@ -1,0 +1,24 @@
+実行したい関数はAWS上で使用たい関数を記載する。
+
+・pythonでAWSを触りたい時はboto3というライブラリがあり、それを使用していく
+→https://aws.amazon.com/jp/sdk-for-python/
+
+・シークレットキーとアクセスキーを取得する方法
+→https://www.multcloud.com/jp/tutorials/s3-key.html
+
+・AWSのS3にCSVデータを置く方法
+→https://tech.unifa-e.com/entry/2021/09/22/131140
+
+・自分で作成したファイル、関数を使用したい場合
+→先ずはローカルで作成したものに関してはZipファイルにしてまとめる必要がある。
+→そのZipファイルでまとめたものをlambdaの関数にupload
+→ もし関数やファイル名が自作のものを使用している場合はランタイム設定のハンドラを修正する必要があるため注意が必要！
+→例えば、main.pyのhandlerを使用したい場合はハンドラを「main.handler」とする必要がある。
+
+・AWSのlambdaにないライブラリを使用したい場合
+→layerというのを作成しなければならない。
+→https://qiita.com/rikei0danshi/items/a8b48ced48f287238c90
+
+・lambdaがS3を使用するためにはlambdaに対して権限を付与する必要がある。
+→基本設定のロールで修正することができる。
+→ここの部分のポリシーのアタッチで必要な権限(今回はS3)を付与する必要がある。
