@@ -7,3 +7,6 @@ $ gcloud init
 ・gsutilコマンドに関して
 →Google Cloud Storage (GCS) を操作するためのコマンドラインツールのこと
 →https://www.apps-gcp.com/gsutil-command-explanation-part1/
+
+・GCPサービス一覧
+→https://cloud-textbook.com/37/

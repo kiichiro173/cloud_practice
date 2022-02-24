@@ -1,0 +1,50 @@
+version: '3'
+
+# ホスト側にdb-dataを作成する。これによりposgreのデータをホスト側にマウントすることができる。
+volumes:
+  db-data:
+
+services:
+  web:
+    build: . # Dockerfileがある箇所を指定
+    ports: # 使用するポートを指定
+      - '3000:3000'
+    volumes: # マウントの指定
+      - '.:/product-register'
+    environment: #環境変数の設定　
+      DATABASE_PASSWORD: 'postgres'
+    # -itを行っている。
+    tty: true
+    stdin_open: true
+    depends_on: # dbが立ち上がってからwebを立ち上げるようにしている。
+      - db
+    links:
+      - db
+
+  db:
+    image: postgres # docker hubにあるposgreのイメージを使用している。
+    volumes:
+      - 'db-data:/var/lib/postgresql/data'
+    environment: #環境変数の設定　
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+    ports:
+      - '5432:5432'
+# ここのpgadminで使用する場合は、dockerのposgreに接続する場合はhost名はdbになるので注意が必要！
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "1235:80"
+    environment:
+      TZ: Asia/Tokyo
+      PGADMIN_DEFAULT_EMAIL: 'aaa@bbb.ccc'
+      PGADMIN_DEFAULT_PASSWORD: 'pgpassword'
+
+
+
+# 中に入ったら以下を実行
+# $ rails new . --force --database=postgresql -skip-bundle
+# railsの実行は以下
+# rails s -b 0.0.0.0
+
