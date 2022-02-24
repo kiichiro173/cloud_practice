@@ -1,0 +1,13 @@
+cloud run とは
+→サーバーレスコンピュータ
+→コンテナに特化したマネージドサービス
+→これは使用した分だけ支払いになる。
+
+特徴
+→高速なデプロイ
+→サーバーレス
+→高いポータビリティー
+
+以下のようにしてローカルにあるDockerfileからbuildを行う。
+→$ gcloud builds submit --tag gcr.io/[PROJECT_ID]/イメージ名 .
+これはGCPのツールにある Cloud Build で確認する事ができる。
