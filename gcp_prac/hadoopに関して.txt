@@ -1,0 +1,10 @@
+Hadoopとは？？
+大規模でーたの蓄積と処理を複数台のサーバで分散して実施するためのオープンソフトウェアのこと
+
+
+dataproc
+→Hadoop・Sparkサービス
+→簡単にHadoop・Sparkのクラスタを構築する事ができる。
+→https://www.topgate.co.jp/gcp11-analyze-data-using-google-cloud-dataproc
+→https://qiita.com/uryyyyyyy/items/72624c7b1e9d021d9ee0
+→https://kiosk-dot-codelabs-site.appspot.com/codelabs/cloud-dataproc-starter-ja/index.html?index=..%2F..gcp-next-tok#1
