@@ -6,7 +6,7 @@ $ gcloud services enable dataflow.googleapis.com dataproc.googleapis.com
 ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 ここから準備を行う！
 #バケットの作成(mbはmake bucket,-lはロケーション今回はマルチリージョン)
-$ gsutil mb -l US gs://$(gcloud config get-value project)gcpbook-ch5/
+$ gsutil mb -l US gs://$(gcloud config get-value project)-gcpbook-ch5/
 バケットのリージョンに関して
 →https://cloud.google.com/storage/docs/locations
 
@@ -126,3 +126,17 @@ inner join
 gcpbook_ch5.users u
 on u.user_pseudo_id = e.user_pseudo_id
 '
+
+
+Dataflowとは
+Apache Beamの実行環境として、ストリーミング処理とバッチ処理の双方を一つのサービスに統合して提供
+→https://qiita.com/esakik/items/3c5c18d4a645db7a8634
+
+## DataflowでのETL
+1.Storage上のユーザ行動ログの取得とBigqueryの課金ユーザであるかどうかのデータを取得する。
+2.取得したデータを結合。その後結果をテーブルに書き込む
+
+まずApache Beam SDKをインストールする。
+$ pipenv install appache-beam[gcp]
+
+次にetl.pyを作成
