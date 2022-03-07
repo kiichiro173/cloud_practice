@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 numpy = "*"
 apache-beam = {extras = ["gcp"], version = "*"}
+google-cloud-storage = "*"
+pandas = "*"
 
 [dev-packages]
 
