@@ -9,6 +9,7 @@ apache-beam = {extras = ["gcp"], version = "*"}
 google-cloud-storage = "*"
 pandas = "*"
 pandas-gbq = "*"
+pyspark = "*"
 
 [dev-packages]
 
