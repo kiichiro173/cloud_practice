@@ -1,0 +1,142 @@
+ETL→Extract,Transform,Loadの頭文字を並べたもの。
+あるデータソースからデータを取得し、変換、結果をデータに流し込むという一連の処理を指す。
+
+#サービスを有効にするコマンド
+$ gcloud services enable dataflow.googleapis.com dataproc.googleapis.com
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ここから準備を行う！
+#バケットの作成(mbはmake bucket,-lはロケーション今回はマルチリージョン)
+$ gsutil mb -l US gs://$(gcloud config get-value project)-gcpbook-ch5/
+バケットのリージョンに関して
+→https://cloud.google.com/storage/docs/locations
+
+
+#公開サンプルデータを保持する。(今回使用するデータはfirebase-public-projectのサンプルデータ)
+--location→ロケーションを指している。
+--destination_format→出力ファイルフォーマット:https://dev.classmethod.jp/articles/bigquery-table-data-export2gcs/
+--compression 圧縮形式
+extractコマンドの使用方法
+→https://cloud.google.com/bigquery/docs/exporting-data?hl=ja#bq
+下の例では
+firebase-public-projectプロジェクトのanalytics_153293282データセットからevents_20181001のテーブルをエクスポートするようにしている。
+これの保存先としてgs://{projectID}-gcpbook-ch5/data/events/20181001/*.json.gzとしている。
+$ bq --location=us extract \
+--destination_format NEWLINE_DELIMITED_JSON \
+--compression GZIP \
+firebase-public-project:analytics_153293282.events_20181001 \
+gs://$(gcloud config get-value project)-gcpbook-ch5/data/events/20181001/*.json.gz
+
+
+# bigqueryのデータセットを作成
+mkはデータセットやテーブルを作成するためのコマンド
+$ bq --location=us mk \
+-d \
+$(gcloud config get-value project):gcpbook_ch5
+
+#先ほど作成したデータセットにusersという名前のテーブルを作成
+--nouse_legacy_sql→https://dev.classmethod.jp/articles/bigquery-standard-sql-and-legacy-sql-position/
+今回はidの先頭が0もしくは1の場合にのみ課金ユーザとしている。
+
+$ bq --location=us query \
+--nouse_legacy_sql \
+'create table gcpbook_ch5.users as 
+select distinct user_pseudo_id,
+substr(user_pseudo_id,0,1) in ("0","1") as is_paid_user
+from `firebase-public-project.analytics_153293282.events_*`'
+
+# 日別の課金ユーザと無課金ユーザそれぞれのユニークユーザ数を保管するテーブルdauを作成
+$ bq --location=us query \
+--nouse_legacy_sql \
+'create table gcpbook_ch5.dau 
+(
+    dt date not null,
+    paid_users int64 not null,
+    free_to_play_users int64 not null
+)'
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+### BigQueryでのELTの実装
+具体的な流れは以下の手順。
+1.bigqueryに作業用のテーブルを作成し、データをロードする。
+2.bigqueryでinsert select文を実行し、作業用テーブルとusersのテーブルを結合して集計しdauテーブルへ流し込む。
+
+作業用テーブルの作成(データを読み取りテーブルを新規に作成してそのデータをテーブルにロードしている。)
+--autodetect→自動的にスキーマが定義される。
+$ bq --location=us load \
+--autodetect \
+--source_format=NEWLINE_DELIMITED_JSON \
+gcpbook_ch5.work_events \
+gs://$(gcloud config get-value project)-gcpbook-ch5/data/events/20181001/*json.gz
+
+作業テーブルとユーザテーブルを結合して結果をdauテーブルに挿入する。
+パラメータに関して：https://qiita.com/damassima/items/899c00935594b60c4020
+パラメータは以下のような順番になっている。
+→パラメータ名:型:値
+$ bq --location=us query \
+--nouse_legacy_sql \
+--parameter='dt:date:2018-10-01' \
+'insert gcpbook_ch5.dau
+select 
+@dt as dt,
+countif(u.is_paid_user) as paid_users,
+countif(not u.is_paid_user) as free_to_play_users
+from (
+    select distinct user_pseudo_id
+    from gcpbook_ch5.work_events
+) e
+inner join 
+gcpbook_ch5.users u
+on u.user_pseudo_id = e.user_pseudo_id
+'
+
+
+### BigQueryでのETLの実装
+1.cloud storage上のユーザを参照する一時テーブルの作成
+2.Bigqueryでinsert select文を実行し、一時テーブルとユーザテーブルを結合し、集計結果を保管テーブルに書き込む。
+
+dauテーブルの作成
+$ bq --location=us query \
+--nouse_legacy_sql \
+'create or replace table gcpbook_ch5.dau 
+(
+    dt date not null,
+    paid_users int64 not null,
+    free_to_play_users int64 not null
+)'
+
+一時テーブルとデータ集計結果の挿入
+--external_table_definition
+--external_table_definition=table::schema@source_format=Cloud Storage URI 'query'
+→https://cloud.google.com/bigquery/external-data-cloud-storage?hl=ja#temporary-tables
+→https://qiita.com/_kumi/items/0a98f159f54f3b97dbe8
+$  bq --location=us query \
+--nouse_legacy_sql \
+--external_table_definition=events::user_pseudo_id:string@NEWLINE_DELIMITED_JSON=gs://$(gcloud config get-value project)-gcpbook-ch5/data/events/20181001/*.json.gz \
+--parameter='dt:date:2018-10-01' \
+'insert gcpbook_ch5.dau
+select
+@dt as dt,
+countif(u.is_paid_user) as paid_users,
+countif(not u.is_paid_user) as free_to_play_users
+from (
+    select distinct user_pseudo_id
+    from events
+) e
+inner join 
+gcpbook_ch5.users u
+on u.user_pseudo_id = e.user_pseudo_id
+'
+
+
+Dataflowとは
+Apache Beamの実行環境として、ストリーミング処理とバッチ処理の双方を一つのサービスに統合して提供
+→https://qiita.com/esakik/items/3c5c18d4a645db7a8634
+
+## DataflowでのETL
+1.Storage上のユーザ行動ログの取得とBigqueryの課金ユーザであるかどうかのデータを取得する。
+2.取得したデータを結合。その後結果をテーブルに書き込む
+
+まずApache Beam SDKをインストールする。
+$ pipenv install appache-beam[gcp]
+
+次にetl.pyを作成
