@@ -1,0 +1,38 @@
+cloud data fusion
+→データパイプラインおよびワークフローを効率的に構築して管理するためのフルマネージドなデータ統合サービス
+
+以下実装を行ってみる。
+------------------------------------------------------------
+データを保管するテーブルを事前に作成
+$ bq --location us query \
+--nouse_legacy_sql \
+"
+create or replace table gcpbook_ch5.dau_by_user_type
+(
+dt string not null,
+is_paid_user bool not null,
+users int64 not null
+)
+"
+
+# cloud data fusionのAPIを有効にする
+$ gcloud services enable datafusion.googleapis.com
+
+# コンソール画面においてData Fusionのページからインスタンスを作成する。
+インスタンス名：gcpbook-ch6
+エディション:Enterprise
+リージョン:us-central1
+
+# パイプラインの作成
+インスタンスの表示を行う。
+
+右上にあるHUBを選択する。
+このHUBには再利用できるプラグインやパイプラインを検索してパイプライン作成時に利用する事ができる。
+→ここでfield adder Transformを選択する．
+
+field adder Transformはデータに対して任意のフィールド（テーブルのカラムに相当する）を追加するプラグインのこと。
+→今回は集計結果に対してパイプラインの実行日のフィールドを追加する際にこのプラグインを使用する。
+
+# create pipelineを作成する。
+・まず初めにGCSを選択する。
+propertiesを選択して行う。

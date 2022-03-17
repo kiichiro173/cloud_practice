@@ -1,0 +1,5 @@
+Bigqueryとspreadsheetを接続して分析する事ができる。
+→計算をBigqueryに任せることによって、Spreadsheetでも容易に大規模なデータを取り扱うと言う事が可能。
+
+Google Chromeにて
+spreadsheet.newと書き込むと新しいスプレッドシートを作成する事ができる。

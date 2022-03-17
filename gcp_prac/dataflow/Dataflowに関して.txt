@@ -1,0 +1,21 @@
+DataFlowに関して。
+参考資料：
+https://qiita.com/arrowKato/items/9cd957f429660290ae14
+
+
+ReadFromText(known_args.input)
+→known_args.inputここには通常GCSのファイルパスが格納されている。
+
+Transform にPCollectionを入出力する処理を次のような形式で記述している。
+→[Out PCollection] = [Input PCollection] | [Transform]
+|（このパイプ）このパイプで複数のTransformを数珠つなぎに記述する事ができる。
+また、
+'文字列'>>とする事でTransformに名前をつけることも可能になる。
+
+ParDoに関して
+→ParDoは自分でclass,関数を作成したものを使用する事ができる。
+pardo_prac.pyのコードを確認
+
+.with_output_types()に関して
+→これは返り値のアノテーションを指している！
+→適切な返り値のアノテーション

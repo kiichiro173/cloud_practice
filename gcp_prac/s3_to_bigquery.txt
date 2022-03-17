@@ -1,0 +1,14 @@
+AmazonのS3から、Bigqueryにデータを転送する方法
+
+Bigquery DTSを使用する。
+
+①AWSのS3に転送したいデータを用意する。
+
+②Bigqueryにデータセットとテーブルを作成する。
+
+③BigqueryのDTSを作成
+→Destination table:Bigqueryのエクスポート先のテーブル名
+
+Transfer Optionsにおいて必要に応じて設定
+例えば1行目をスキップするときは「Header rows to skip」を使用する。
+必要に応じて通知の部分をオンにする！
